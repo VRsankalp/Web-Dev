@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Barebero | Anime Luxury Grooming</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+
+<style>
+html { scroll-behavior: smooth; }
+
+/* Floating animation */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0px); }
+}
+
+.float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Glow */
+.glow {
+  box-shadow: 0 0 20px #D4AF37;
+}
+
+.glow:hover {
+  box-shadow: 0 0 35px #D4AF37;
+  transform: scale(1.08);
+  transition: 0.3s;
+}
+</style>
+</head>
+
+<body class="bg-[#0f172a] text-white font-sans">
+
+<!-- Navbar -->
+<nav class="fixed w-full bg-black bg-opacity-70 backdrop-blur-md p-5 z-50">
+  <div class="container mx-auto flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-[#D4AF37]">💈 Barebero</h1>
+    <a href="#contact" class="bg-[#D4AF37] text-black px-5 py-2 rounded-lg glow font-semibold">
+      Book Now
+    </a>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="min-h-screen flex items-center justify-center pt-24">
+
+<div class="container mx-auto grid md:grid-cols-2 items-center px-6 gap-10">
+
+  <!-- Text -->
+  <div data-aos="fade-right">
+    <h2 class="text-5xl font-bold text-[#D4AF37] mb-6">
+      Anime Style. Real Confidence.
+    </h2>
+    <p class="text-gray-300 mb-8 text-lg">
+      Where modern grooming meets cinematic anime aesthetics.
+      Step into the future of style.
+    </p>
+    <a href="#services" class="bg-[#D4AF37] text-black px-8 py-4 rounded-xl font-bold glow">
+      Explore Services
+    </a>
+  </div>
+
+  <!-- Anime Character -->
+  <div class="flex justify-center" data-aos="fade-left">
+    <img src="https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&w=800&q=80"
+         alt="Anime Barber Character"
+         class="rounded-2xl shadow-2xl float max-h-[500px]">
+  </div>
+
+</div>
+</section>
+
+<!-- Services -->
+<section id="services" class="py-24 bg-[#111827]">
+
+<h3 class="text-4xl font-bold text-center mb-16 text-[#D4AF37]" data-aos="fade-up">
+  Premium Services
+</h3>
+
+<div class="container mx-auto grid md:grid-cols-3 gap-10 px-6">
+
+  <div class="bg-white text-black p-8 rounded-2xl shadow-xl transform hover:scale-105 transition"
+       data-aos="zoom-in">
+    <h4 class="text-xl font-bold mb-4 text-[#7F1D1D]">Hair Cut</h4>
+    <p class="mb-4">Precision anime-inspired styling.</p>
+    <span class="font-bold text-lg">₹299</span>
+  </div>
+
+  <div class="bg-white text-black p-8 rounded-2xl shadow-xl transform hover:scale-105 transition"
+       data-aos="zoom-in" data-aos-delay="200">
+    <h4 class="text-xl font-bold mb-4 text-[#7F1D1D]">Beard Design</h4>
+    <p class="mb-4">Sharp futuristic beard shaping.</p>
+    <span class="font-bold text-lg">₹199</span>
+  </div>
+
+  <div class="bg-white text-black p-8 rounded-2xl shadow-xl transform hover:scale-105 transition"
+       data-aos="zoom-in" data-aos-delay="400">
+    <h4 class="text-xl font-bold mb-4 text-[#7F1D1D]">Full Makeover</h4>
+    <p class="mb-4">Complete cinematic transformation.</p>
+    <span class="font-bold text-lg">₹449</span>
+  </div>
+
+</div>
+</section>
+
+<!-- Contact -->
+<section id="contact" class="py-24 text-center bg-black">
+
+<h3 class="text-4xl font-bold text-[#D4AF37] mb-8" data-aos="fade-up">
+  Enter the Barebero Experience
+</h3>
+
+<p class="text-gray-300 mb-3">📍 Main Street, Your City</p>
+<p class="text-gray-300 mb-3">📞 +91 9876543210</p>
+<p class="text-gray-300 mb-8">✉️ info@barebero.com</p>
+
+<a href="#" class="bg-[#D4AF37] text-black px-10 py-4 rounded-xl font-bold glow">
+  Book Your Slot
+</a>
+
+</section>
+
+<script>
+AOS.init({
+  duration: 1200,
+  once: true
+});
+</script>
+
+</body>
+</html>

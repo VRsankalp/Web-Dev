@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+   <h1 id="h" style="color: blue; text-align: center;">Hello</h1>
+
+<p id="p" style="font-size: 18px; color: gray; line-height: 1.5;">
+  Lorem ipsum dolor, sit amet consectetur adipisicing elit. Facilis consequuntur iusto autem explicabo nihil omnis maiores porro dolores. Delectus quod dolores enim suscipit deleniti earum omnis assumenda perferendis ullam in?
+</p>
+
+<button id="b" style="background-color: black; color: white; padding: 10px 20px; border: none; border-radius: 5px;">
+  Click Me
+</button>
+    
+</body>
+<script>
+const heading = document.getElementById("h")
+const button = document.getElementById("b")
+const paragraph = document.getElementById("p")
+console.log(heading.innerText);
+console.log(heading);
+console.log(heading.innerText="wht are you doing");
+// console.log(heading.style.color = "green");
+// console.log(heading.color = "green");
+button.addEventListener("click",function(){
+
+    button.innerText="please wait";
+    button.disabled = true 
+    document.body.style.backgroundColor = "black"
+    heading.style.color = "white"
+    paragraph.style.color ="white" 
+
+})
+const obj={
+  name:"sankalp",
+  age:21
+}
+
+localStorage.setItem("engineer",["chaiwala","engineer"]) 
+console.log(localStorage.getItem("engineer"))
+
+
+
+
+
+</script>
+</html>
