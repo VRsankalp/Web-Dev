@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h2>Form Example</h2>
+
+    <form id="form">
+
+        <input type="text" id="name" placeholder="Enter name">
+
+        <input type="text" id="password" placeholder="password">
+
+        <button type="submit">Submit</button>
+
+    </form>
+</body>
+<script>
+    const pas = document.querySelector("#password")
+    const form = document.querySelector("#form")
+    form.addEventListener("submit",function(event){
+       const pa = pas.value
+
+    const hasCapital = /[A-Z]/.test(pa)
+
+    if(!hasCapital){
+        event.preventDefault()
+        alert("Password must contain at least one capital letter")
+    }
+
+     if(pas.value.length<8||pas.value.length>10){
+            event.preventDefault();
+            alert("password msut be 8 minimum length ")
+        
+
+    }
+    })
+</script>
+</html>
