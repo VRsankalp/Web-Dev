@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ghibli Memory Creator 2026</title>
+    <style>
+        :root { --ghibli-blue: #4a90e2; --soft-cream: #fdfbf7; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--soft-cream); display: flex; justify-content: center; padding: 20px; }
+        #app { width: 450px; background: white; padding: 30px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.06); }
+        
+        .api-input { margin-bottom: 25px; }
+        label { display: block; font-size: 0.8rem; font-weight: bold; color: #555; margin-bottom: 8px; }
+        #apiKey { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 12px; box-sizing: border-box; transition: 0.3s; }
+        #apiKey:focus { border-color: var(--ghibli-blue); outline: none; }
+
+        .upload-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .preview-container { text-align: center; }
+        .preview-img { width: 100%; height: 140px; border-radius: 16px; object-fit: cover; background: #f8f9fa; border: 2px dashed #ddd; cursor: pointer; transition: 0.3s; }
+        .preview-img:hover { border-color: var(--ghibli-blue); background: #f0f7ff; }
+        
+        button { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-generate { background: var(--ghibli-blue); color: white; }
+        .btn-download { background: #10b981; color: white; display: none; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+
+        #resultArea { margin-top: 30px; text-align: center; display: none; border-top: 1px solid #eee; pt: 20px; }
+        #outputImage { width: 100%; border-radius: 16px; margin: 15px 0; border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .loading-text { font-size: 0.9rem; color: #666; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <h2 style="text-align:center; color: #2d3748; margin-top: 0;">Ghibli Memory Merger</h2>
+
+    <div class="api-input">
+        <label>GEMINI API KEY</label>
+        <input type="password" id="apiKey" placeholder="Enter your API Key here...">
+    </div>
+
+    <div class="upload-section">
+        <div class="preview-container">
+            <small>Alive Person</small>
+            <input type="file" id="f1" hidden onchange="handleFile(this, 'p1')">
+            <img id="p1" class="preview-img" onclick="document.getElementById('f1').click()" title="Click to upload">
+        </div>
+        <div class="preview-container">
+            <small>Passed Away</small>
+            <input type="file" id="f2" hidden onchange="handleFile(this, 'p2')">
+            <img id="p2" class="preview-img" onclick="document.getElementById('f2').click()" title="Click to upload">
+        </div>
+    </div>
+
+    <button class="btn-generate" id="genBtn" onclick="generate()">Generate Ghibli Image</button>
+    <div class="loading-text" id="loader">🎨 Blending memories into Ghibli art...</div>
+
+    <div id="resultArea">
+        <img id="outputImage">
+        <button class="btn-download" id="dlBtn" onclick="downloadImage()">Download Merged Image</button>
+    </div>
+</div>
+
+<script>
+    function handleFile(input, imgId) {
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => document.getElementById(imgId).src = e.target.result;
+            reader.readAsDataURL(file);
+        }
+    }
+
+    async function generate() {
+        const key = document.getElementById('apiKey').value;
+        const p1 = document.getElementById('p1').src;
+        const p2 = document.getElementById('p2').src;
+
+        if (!key || p1.length < 100 || p2.length < 100) {
+            alert("Please provide the API key and both photos.");
+            return;
+        }
+
+        const genBtn = document.getElementById('genBtn');
+        const loader = document.getElementById('loader');
+        genBtn.disabled = true;
+        loader.style.display = "block";
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${key}`;
+
+        const prompt = "Artistic Image Fusion: Merge these two subjects into one single Studio Ghibli anime scene. Character 1 (alive) and Character 2 (the child who passed away) should be standing together in a lush Ghibli-style meadow. Style: 2D animation, watercolor sky, soft lighting. Make both characters look happy and perfectly integrated into the world.";
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: prompt },
+                            { inline_data: { mime_type: "image/jpeg", data: p1.split(',')[1] } },
+                            { inline_data: { mime_type: "image/jpeg", data: p2.split(',')[1] } }
+                        ]
+                    }]
+                })
+            });
+
+            const data = await response.json();
+            const base64 = data.candidates[0].content.parts.find(p => p.inline_data).inline_data.data;
+            
+            const outImg = document.getElementById('outputImage');
+            outImg.src = "data:image/jpeg;base64," + base64;
+            document.getElementById('resultArea').style.display = "block";
+            document.getElementById('dlBtn').style.display = "block";
+        } catch (err) {
+            alert("API Error: Check your key or try again in 60 seconds.");
+            console.error(err);
+        } finally {
+            genBtn.disabled = false;
+            loader.style.display = "none";
+        }
+    }
+
+    // --- FIXED DOWNLOAD LOGIC ---
+    function downloadImage() {
+        const img = document.getElementById('outputImage');
+        if (!img.src) return;
+
+        // Convert Base64 to Blob for a reliable download
+        const base64Str = img.src.split(',')[1];
+        const byteChars = atob(base64Str);
+        const byteNumbers = new Array(byteChars.length);
+        
+        for (let i = 0; i < byteChars.length; i++) {
+            byteNumbers[i] = byteChars.charCodeAt(i);
+        }
+        
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'image/jpeg' });
+        const blobUrl = URL.createObjectURL(blob);
+
+        // Trigger hidden link click
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = "Ghibli_Memory_2026.jpg";
+        document.body.appendChild(link);
+        link.click();
+        
+        // Cleanup
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+    }
+</script>
+
+</body>
+</html>

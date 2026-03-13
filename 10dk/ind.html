@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini 1.5 Flash Chat</title>
+    <style>
+        :root {
+            --primary: #4285f4;
+            --bg: #f0f2f5;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        
+        #chatbox { width: 450px; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 20px; display: flex; flex-direction: column; }
+        
+        #messages { height: 350px; overflow-y: auto; border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 8px; background: #fafafa; }
+        
+        .msg { margin: 8px 0; padding: 8px 12px; border-radius: 8px; max-width: 85%; line-height: 1.4; }
+        .user { background: #e3effd; align-self: flex-end; color: #1a73e8; margin-left: auto; }
+        .bot { background: #f1f3f4; align-self: flex-start; color: #3c4043; }
+
+        .input-group { display: flex; gap: 8px; align-items: center; }
+        input[type="text"] { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+        button { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        button:disabled { background: #ccc; }
+
+        #preview-container { margin-top: 10px; display: none; position: relative; }
+        #preview { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid var(--primary); }
+    </style>
+</head>
+<body>
+
+<div id="chatbox">
+    <h2 style="margin-top:0; color: #444;">Gemini AI</h2>
+    <div id="messages"></div>
+
+    <div id="preview-container">
+        <img id="preview">
+        <small style="display:block; color: #666;">Image attached</small>
+    </div>
+
+    <div class="input-group">
+        <input type="file" id="imageInput" accept="image/*" style="display:none">
+        <button onclick="document.getElementById('imageInput').click()" style="background:#666">📷</button>
+        <input type="text" id="userInput" placeholder="Ask me anything...">
+        <button id="sendBtn" onclick="handleSend()">Send</button>
+    </div>
+</div>
+
+<script>
+    // --- CONFIGURATION ---
+    const API_KEY = ""; 
+    // Note: Gemini 1.5 Flash is currently the stable high-speed model
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+
+    const messagesDiv = document.getElementById("messages");
+    const userInput = document.getElementById("userInput");
+    const imageInput = document.getElementById("imageInput");
+    const preview = document.getElementById("preview");
+    const previewContainer = document.getElementById("preview-container");
+
+    let selectedImageBase64 = null;
+
+    // Handle Image Selection
+    imageInput.addEventListener("change", function() {
+        const file = this.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            selectedImageBase64 = e.target.result.split(',')[1]; // Get base64 string only
+            preview.src = e.target.result;
+            previewContainer.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+    });
+
+    function addMessage(text, role) {
+        const div = document.createElement("div");
+        div.className = `msg ${role}`;
+        div.innerText = text;
+        messagesDiv.appendChild(div);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    async function handleSend() {
+        const text = userInput.value.trim();
+        if (!text && !selectedImageBase64) return;
+
+        addMessage(text || "Sent an image", "user");
+        userInput.value = "";
+        const btn = document.getElementById("sendBtn");
+        btn.disabled = true;
+
+        // Build the payload for Gemini 1.5
+        const contents = [{
+            parts: [{ text: text }]
+        }];
+
+        // Add image to payload if exists
+        if (selectedImageBase64) {
+            contents[0].parts.push({
+                inline_data: {
+                    mime_type: "image/jpeg",
+                    data: selectedImageBase64
+                }
+            });
+        }
+
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ contents })
+            });
+
+            const data = await response.json();
+            const botReply = data.candidates[0].content.parts[0].text;
+            addMessage(botReply, "bot");
+
+        } catch (err) {
+            console.error(err);
+            addMessage("Error: Check API key or connection.", "bot");
+        } finally {
+            btn.disabled = false;
+            selectedImageBase64 = null;
+            previewContainer.style.display = "none";
+            imageInput.value = "";
+        }
+    }
+
+    // Allow Enter key to send
+    userInput.addEventListener("keypress", (e) => { if(e.key === "Enter") handleSend(); });
+</script>
+
+</body>
+</html>

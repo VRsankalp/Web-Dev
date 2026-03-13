@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Music & Ghibli Memory Bot</title>
+    <style>
+        :root {
+            --ghibli-blue: #4a90e2;
+            --bg: #f9fbfd;
+            --music-purple: #8b5cf6;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        #bot-container {
+            width: 500px;
+            background: white;
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        /* API Security Style */
+        .api-input {
+            margin-bottom: 20px;
+            border: 1px solid #fee2e2;
+            padding: 10px;
+            border-radius: 12px;
+            background: #fff5f5;
+        }
+
+        #apiKey {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #fca5a5;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .upload-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .preview-box {
+            border: 2px dashed #cbd5e1;
+            border-radius: 15px;
+            height: 130px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+        }
+
+        .chat-area {
+            border-top: 2px solid #f1f5f9;
+            padding-top: 20px;
+        }
+
+        #userInput {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: 0.2s;
+        }
+
+        #genBtn {
+            background: var(--ghibli-blue);
+        }
+
+        #dlBtn {
+            background: #10b981;
+            display: none;
+        }
+
+        button:disabled {
+            background: #cbd5e1;
+        }
+
+        #output {
+            width: 100%;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        #status {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="bot-container">
+        <h2 style="text-align:center; color: #1e293b;">🎹 Music Ghibli Bot</h2>
+
+        <div class="api-input">
+            <label style="font-size:0.7rem; color:#b91c1c; font-weight:bold;">ENTER GEMINI API KEY:</label>
+            <input type="password" id="apiKey" placeholder="AIzaSy...">
+        </div>
+
+        <div class="upload-row">
+            <div class="preview-box" onclick="document.getElementById('f1').click()">
+                <span id="t1">👤 Alive Person</span>
+                <input type="file" id="f1" hidden onchange="preview(this, 'p1', 't1')">
+                <img id="p1">
+            </div>
+            <div class="preview-box" onclick="document.getElementById('f2').click()">
+                <span id="t2">👼 Loved One</span>
+                <input type="file" id="f2" hidden onchange="preview(this, 'p2', 't2')">
+                <img id="p2">
+            </div>
+        </div>
+
+        <div class="chat-area">
+            <input type="text" id="userInput" placeholder="Name a song or artist to start the magic...">
+            <div class="btn-group">
+                <button id="genBtn" onclick="processRequest()">Merge with Song Style</button>
+                <button id="dlBtn" onclick="downloadImage()">Download</button>
+            </div>
+            <div id="status"></div>
+        </div>
+
+        <img id="output">
+    </div>
+
+    <script>
+        // 1. Music Keywords Filter (Code-Level Security)
+        function isMusicRelated(text) {
+            const keywords = ['song', 'singer', 'music', 'lyrics', 'artist', 'album', 'melody', 'tune', 'sing', 'ghibli', 'soundtrack', 'instrumental'];
+            const input = text.toLowerCase();
+            return keywords.some(k => input.includes(k));
+        }
+
+        function preview(input, imgId, textId) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById(imgId).src = e.target.result;
+                    document.getElementById(textId).style.display = "none";
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function processRequest() {
+            const key = document.getElementById("apiKey").value.trim();
+            const text = document.getElementById('userInput').value;
+            const img1 = document.getElementById('p1').src;
+            const img2 = document.getElementById('p2').src;
+
+            if (!key) return alert("Please enter an API Key.");
+
+            if (!isMusicRelated(text)) {
+                document.getElementById('status').innerText =
+                    "❌ Please mention a song or music topic to proceed!";
+                return;
+            }
+
+            if (!img1.startsWith("data") || !img2.startsWith("data"))
+                return alert("Upload both photos first.");
+
+            const btn = document.getElementById('genBtn');
+            const status = document.getElementById('status');
+
+            btn.disabled = true;
+            status.innerText = "🎵 Creating Ghibli memory...";
+
+            const url =
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${key}`;
+
+            const payload = {
+                system_instruction: {
+                    parts: [{
+                        text: "You are a Music-only Image Fusion Expert. Merge the alive person and loved one into a happy Ghibli scene inspired by the mentioned song."
+                    }]
+                },
+                contents: [{
+                    parts: [
+                        { text: `Merge these two photos in a Ghibli style inspired by the song: ${text}` },
+                        { inline_data: { mime_type: "image/jpeg", data: img1.split(',')[1] } },
+                        { inline_data: { mime_type: "image/jpeg", data: img2.split(',')[1] } }
+                    ]
+                }]
+            };
+
+            try {
+
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                console.log(data);
+
+                const part = data?.candidates?.[0]?.content?.parts?.find(p => p.inline_data);
+
+                if (!part) {
+                    status.innerText = "⚠️ API returned no image.";
+                    btn.disabled = false;
+                    return;
+                }
+
+                const base64Image = part.inline_data.data;
+
+                const out = document.getElementById('output');
+                out.src = "data:image/jpeg;base64," + base64Image;
+                out.style.display = "block";
+
+                document.getElementById('dlBtn').style.display = "block";
+                status.innerText = "✨ Memory Created!";
+
+            } catch (e) {
+
+                console.error(e);
+                status.innerText = "⚠️ Error. Check API key or quota.";
+
+            } finally {
+
+                btn.disabled = false;
+
+            }
+        }
+
+        // Reliable Download Logic
+        function downloadImage() {
+            const out = document.getElementById('output');
+            const link = document.createElement('a');
+            // Convert base64 to Blob for 2026 browser compatibility
+            const bytes = atob(out.src.split(',')[1]);
+            const arr = new Uint8Array(bytes.length);
+            for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+            const blob = new Blob([arr], { type: 'image/jpeg' });
+
+            link.href = URL.createObjectURL(blob);
+            link.download = "Ghibli_Music_Memory.jpg";
+            link.click();
+        }
+    </script>
+</body>
+
+</html>
